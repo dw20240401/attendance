@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>勤怠一覧</title>
+    <link rel="stylesheet" type="text/css" href="index.css">
+  </head>
+  <body>
+    <div id="wrapper">
+      <header>
+        <h1>勤怠一覧</h1>
+      </header>
+      <main>
+        <div>
+          <p id="NowDateArea"></p>
+          <!-- <p id="NowTimeArea"></p> -->
+        </div>
+        <div>
+          <table id="tbl" border="1">
+            <thead>
+              <tr>
+                <!-- <th></th> -->
+                <th>社員名</th>
+                <th>勤務場所</th>
+                <th>勤務開始</th>
+                <th>勤務終了</th>
+              </tr>
+            </thead>
+          </table>
+        </div>
+      </main>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore-compat.js"></script>
+    <script>
+      // FireStore設定
+      const firebaseConfig = {
+        apiKey: "AIzaSyCL5ftfrlwsjTa4O-DjPqLtJA-t0JHDLoU",
+        authDomain: "attendance-3cf4f.firebaseapp.com",
+        projectId: "attendance-3cf4f",
+        storageBucket: "attendance-3cf4f.appspot.com",
+        messagingSenderId: "442106731625",
+        appId: "1:442106731625:web:a3c7b0f4521bfd88c096f8",
+        measurementId: "G-1PN91D78KW"     
+      };
+      const app = firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+
+      // KING OF TIME WebAPI
+      const xhr = new XMLHttpRequest();
+      // xhr.withCredentials = true;
+      xhr.open("GET", "https://api.kingtime.jp/v1.0/daily-workings/timerecord?start=2024-04-23&end=2024-04-23&additionalFields=currentDateEmployee");
+      // xhr.setRequestHeader("Access-Control-Allow-Origin", "*");
+      xhr.setRequestHeader("Authorization", "Bearer 07d05c20a9fb41a5b1be08888d2f2654");
+      xhr.setRequestHeader("Content-Type", "application/json");
+      xhr.send();
+
+      xhr.onreadystatechange = function() {
+        if(xhr.readyState === 4 && xhr.status === 200) {
+          console.log(xhr.responseText);
+        }
+      }
+
+      // 現在日時セット
+      function setNowDataTime() {
+        // 現在日時
+        var dateTime=new Date();
+
+        // 現在日付
+        var year = dateTime.getFullYear().toString().padStart(4, "0");
+        var month = (dateTime.getMonth()+1).toString().padStart(2, "0");
+        var day = dateTime.getDate().toString().padStart(2, "0");
+        var week = dateTime.getDay();
+        var week_ja= new Array("日","月","火","水","木","金","土");
+        var dispDate = year + "/" + month + "/" + day + "(" + week_ja[week] + ")";
+        document.getElementById("NowDateArea").innerHTML = dispDate;
+
+        // 現在時刻
+        var nowHour = dateTime.getHours().toString().padStart(2, "0");
+        var nowMin  = dateTime.getMinutes().toString().padStart(2, "0");
+        var nowSec  = dateTime.getSeconds().toString().padStart(2, "0");
+        var time = nowHour + ":" + nowMin + ":" + nowSec;
+        // document.getElementById("NowTimeArea").innerHTML = time;
+      }
+      setInterval('setNowDataTime()',1000);
+
+      function getAttendance() {
+        // 現在日時
+        var dateTime=new Date();
+
+        // 現在日付
+        var year = dateTime.getFullYear().toString().padStart(4, "0");
+        var month = (dateTime.getMonth()+1).toString().padStart(2, "0");
+        var day = dateTime.getDate().toString().padStart(2, "0");
+        var date = year + month + day;
+
+        // ユーザ一覧
+        var users = [];
+        var usersDocRef = db.collection("users");
+        console.log(usersDocRef.get());
+        usersDocRef.get().then((docs) => {
+          docs.forEach(doc => {
+            var user = doc.data();
+            var tbl = document.getElementById("tbl");
+            var tr = document.createElement("tr");
+            var td1 = document.createElement('td');
+            var td2 = document.createElement('td');
+            var td3 = document.createElement('td');
+            var td4 = document.createElement('td');
+            var td5 = document.createElement('td');
+            // 各ユーザの勤怠情報取得
+            var attendanceDocRef = db.collection("attendance").doc(date).collection("users").doc(user.user_cd);
+            // var attendanceDocRef = db.collection("attendance").doc("20240425").collection("users").doc(user.user_cd);
+            attendanceDocRef.get().then((doc2) => {
+              if(doc2.exists) {
+                var attendance = doc2.data();
+                // テーブル行追加
+                // td1.textContent = "●";
+                // 勤務中か
+                if(attendance.start_time && !attendance.end_time) {
+                  // td1.style.color = "#008000";
+                  td1.style.color = "#ffffff";
+                  td1.style.fontWeight = "bold";
+                  td1.style.backgroundColor = "#009900";
+                  td4.textContent = "--:--:--";
+                } else {
+                  // td1.style.color = "#ff0000";
+                  td1.style.color = "#ffffff";
+                  td1.style.fontWeight = "bold";
+                  td1.style.backgroundColor = "#FF6600"
+                  td4.textContent = attendance.end_time;
+                }
+                td1.textContent = user.user_name;
+                td2.textContent = attendance.work_space;
+                td3.textContent = attendance.start_time;
+                tr.appendChild(td1);
+                tr.appendChild(td2);
+                tr.appendChild(td3);
+                tr.appendChild(td4);
+                // tr.appendChild(td5);
+                tbl.appendChild(tr);
+              } else {
+                // テーブル行追加
+                // td1.textContent = "●";
+                // td1.style.color = "#FF0000";
+                td1.textContent = user.user_name;
+                td1.style.color = "#ffffff";
+                td1.style.fontWeight = "bold";
+                td1.style.backgroundColor = "#FF6600"
+                td2.textContent = "";
+                td3.textContent = "--:--:--";
+                td4.textContent = "--:--:--";
+                tr.appendChild(td1);
+                tr.appendChild(td2);
+                tr.appendChild(td3);
+                tr.appendChild(td4);
+                // tr.appendChild(td5);
+                tbl.appendChild(tr);
+              }
+            }).catch((error) => {
+              console.log("🚨🚨🚨")
+            });
+          });
+        }).catch((error) => {
+            console.log("Error getting document:", error);
+        });
+      }
+      getAttendance();
+      // setInterval('getAttendance()',1000);
+
+    </script>
+  </body>
+</html>

@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>勤怠登録</title>
+    <link rel="stylesheet" type="text/css" href="stamping.css">
+  </head>
+  <body>
+    <header class="header_area">
+      <h1 class="title_wrapper">
+        <span class="title">勤怠登録</span>
+      </h1>
+    </header>
+    <div class="main_contents_wrapper">
+      <div class="user">
+        <p id="userInfoArea"></p>
+        <input type="hidden" id="userCd">
+        <input type="hidden" id="userName">
+        <input type="hidden" id="employeeKey">
+      </div>
+      <div class="date">
+        <p id="NowDateArea"></p>
+      </div>
+      <div class="time">
+        <p id="NowTimeArea"></p>
+      </div>
+      <div class="address">
+        <p id="nowAddressArea"></p>
+      </div>
+      <div>
+        <button class="start_work_btn" type="button" id="startWorkBtn">勤務開始</button>
+      </div>
+      <div class="wp-block-spacer" style="height: 20px;" aria-hidden="true"></div>
+      <div class="endWorkBtn">
+        <button class="end_work_btn" type="button" id="endWorkBtn">勤務終了</button>
+      </div>
+      <div class="wp-block-spacer" style="height: 100px;" aria-hidden="true"></div>
+      <!-- <div>
+        <button class="user_select_btn" type="button" id="userSelectBtn">ユーザ選択</button>
+      </div> -->
+      <div>
+        <button class="user_select_btn" type="button" id="logoutBtn">ログアウト</button>
+      </div>
+    </div>
+
+    <!-- ユーザ選択モーダル -->
+    <div id="userSelectModal" class="modal">
+      <div class="modal-content">
+        <div>
+          <p>ユーザ情報を選択して下さい</p>
+        </div>
+        <div>
+          <select id="userSelect" required>
+            <option value="" selected disabled>選択してください</option>
+          </select>
+        </div>
+        <br>
+        <div>
+          <button class="confirm_btn" type="button" id="userConfirm">確　　　定</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ログインモーダル -->
+    <div id="loginModal" class="modal">
+      <div class="modal-content">
+        <p>メールアドレス、パスワードを入力して下さい。</p>
+        <div class="modal-div">
+          <p>
+            <label>メールアドレス</label>
+            <input type="email" id="email" required>
+          </p>
+          <p>
+            <label>パスワード</label>
+            <input type="password" id="password" required>
+          </p>
+        </div>
+        <div>
+          <button class="login-btn" type="button" id="loginBtn">ログイン</button>
+        </div>
+        <div class="wp-block-spacer" style="height: 20px;" aria-hidden="true"></div>
+        <div>
+          <button class="pass-init-btn" type="button" id="passInitBtn">パスワード初期化</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 勤務開始モーダル -->
+    <div id="modal" class="modal">
+      <div class="modal-content">
+        <div>
+          <p>勤務場所を選択して下さい</p>
+        </div>
+        <div>
+          <select id="space">
+            <option value="横浜本社">横浜本社</option>
+            <option value="在宅勤務">在宅勤務</option>
+            <option value="外出">外出</option>
+            <option value="有給">有給</option>
+          </select>
+        </div>
+        <div class="wp-block-spacer" style="height: 20px;" aria-hidden="true"></div>
+        <div>
+          <button class="confirm_btn" type="button" id="startConfirm">確　　　定</button>
+        </div>
+        <div class="wp-block-spacer" style="height: 20px;" aria-hidden="true"></div>
+        <div>
+          <button type="button" id="close">閉　じ　る</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 勤務終了モーダル -->
+    <div id="modal2" class="modal">
+      <div class="modal-content">
+        <div>
+          <!-- <label for="space_schedule">明日の勤務予定場所を選択して下さい</label> -->
+          <p>明日の勤務予定場所を選択して下さい</p>
+        </div>
+        <div>
+          <select id="space_schedule">
+            <option value="横浜本社">横浜本社</option>
+            <option value="在宅勤務">在宅勤務</option>
+            <option value="外出">外出</option>
+            <option value="有給">有給</option>
+          </select>
+        </div>
+        <div class="wp-block-spacer" style="height: 20px;" aria-hidden="true"></div>
+        <div>
+          <button class="confirm_btn" type="button" id="endConfirm">確　　　定</button>
+        </div>
+        <div class="wp-block-spacer" style="height: 20px;" aria-hidden="true"></div>
+        <div>
+          <button type="button" id="close2">閉　じ　る</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- メッセージモーダル -->
+    <div id="messageModal" class="modal">
+      <div class="modal-content">
+        <div>
+          <p id="modalMessage"></p>
+        </div>
+        <div class="wp-block-spacer" style="height: 20px;" aria-hidden="true"></div>
+        <div>
+          <button type="button" id="close3">　閉じる　</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-auth-compat.js"></script>
+    <script>
+      // FireStore
+      const firebaseConfig = {
+        apiKey: "AIzaSyCL5ftfrlwsjTa4O-DjPqLtJA-t0JHDLoU",
+        authDomain: "attendance-3cf4f.firebaseapp.com",
+        projectId: "attendance-3cf4f",
+        storageBucket: "attendance-3cf4f.appspot.com",
+        messagingSenderId: "442106731625",
+        appId: "1:442106731625:web:a3c7b0f4521bfd88c096f8",
+        measurementId: "G-1PN91D78KW"     
+      };
+      const app = firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+
+      // URLから社員番号を取得
+      // const urlParams = new URLSearchParams(window.location.search);
+      // const id = urlParams.get('id');
+      // var msg = "";
+
+      // var docRef = db.collection("users").doc(id);
+      // docRef.get().then((doc) => {
+      //   if (doc.exists) {
+      //     user = doc.data();
+      //     document.getElementById("userCd").value = id;
+      //     document.getElementById("userName").value = user.user_name;
+      //     msg = id + "/" + user.user_name;
+      //     document.getElementById("userInfoArea").innerHTML = msg;
+      //   } else {
+      //     console.log("No such document!");
+      //     msg = "🚨";
+      //     document.getElementById("userInfoArea").innerHTML = msg;
+
+      //   }
+      // }).catch((error) => {
+      //     console.log("Error getting document:", error);
+      //     msg = "🚨🚨🚨";
+      //     document.getElementById("userInfoArea").innerHTML = msg;
+      // });
+      // console.log(msg);
+      // document.getElementById("userInfoArea").innerHTML = msg;
+
+      // ユーザ一覧を取得してセレクトボックスにセット
+      // var userSelect = document.getElementById("userSelect");
+      // var usersDocRef = db.collection("users");
+      // usersDocRef.get().then((userDocs) => {
+      //   userDocs.forEach(userDoc => {
+      //     var userOption = document.createElement("option");
+      //     user = userDoc.data();
+      //     userOption.value = user.user_cd + "," + user.employee_key;
+      //     userOption.text = user.user_name;
+      //     userSelect.appendChild(userOption);
+      //   });
+      // }).catch((error) => {
+      //   console.log("Error getting document:", error);
+      // });
+
+      // Local Storage 読み込み
+      // var localData = localStorage.getItem("userKey")
+      // var localUser = JSON.parse(localData);
+      // if(!localUser) {
+      //   console.log("🚨nullです。");
+      //   loginModal.style.display = "block";
+      // } else {
+      //   console.log("LocalStorega読込");
+      //   console.log(localUser.userCd);
+      //   console.log(localUser.userName);
+      //   console.log(localUser.employeeKey);
+      //   document.getElementById("userCd").value = localUser.userCd;
+      //   document.getElementById("userName").value = localUser.userName;
+      //   document.getElementById("employeeKey").value = localUser.employeeKey;
+      //   document.getElementById("userInfoArea").innerHTML = localUser.userCd + " / " + localUser.userName;
+      // }
+
+      // ログイン状態チェック
+      firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+          // Firestoreからユーザ情報を取得
+          var userDocRef = db.collection("users").doc(user.uid);
+          userDocRef.get().then((userDoc) => {
+            // Firesotre存在チェック
+            if (userDoc.data() === undefined) {
+              alert("Firestore未登録");
+              loginModal.style.display = "block";
+            } else {
+              var userData = userDoc.data()
+              document.getElementById("userCd").value = userData.user_cd;
+              document.getElementById("userName").value = userData.user_name;
+              document.getElementById("employeeKey").value = userData.employee_key;
+              document.getElementById("userInfoArea").innerHTML = userData.user_cd + " / " + userData.user_name;
+              loginModal.style.display = "none";
+            }
+          }).catch((error) => {
+            console.log("Error getting document:", error);
+            loginModal.style.display = "block";
+            alert("Error getting document");
+          });
+        } else {
+          // 未ログイン
+          loginModal.style.display = "block";
+        }
+      });
+
+      // 緯度経度を取得
+      var latitude = "";
+      var longitude = "";
+      var address = "";
+      navigator.geolocation.getCurrentPosition((position) => {
+        latitude = position.coords.latitude;
+        longitude = position.coords.longitude
+        console.log(latitude);
+        console.log(longitude);
+
+        // 緯度経度から住所を取得
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "https://getaddress-jbvalezpva-an.a.run.app?latitude=" + latitude + "&longitude=" + longitude);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send();
+        xhr.responseType = "text";
+        xhr.onload = () => {
+          if (xhr.readyState == 4 && xhr.status == 200) {
+            address = xhr.response;
+            console.log(address);
+            document.getElementById("nowAddressArea").innerHTML = address;
+            // document.getElementById("address").value = address;
+          } else {
+            console.log(`Error: ${xhr.status}`);
+          }
+        };
+      });
+
+      // ISO8601(JST)
+      function toISOStringWithTimezone(date) {
+        const pad = function (str) {
+            return ('0' + str).slice(-2);
+        };
+        const year = (date.getFullYear()).toString();
+        const month = pad((date.getMonth() + 1).toString());
+        const day = pad(date.getDate().toString());
+        const hour = pad(date.getHours().toString());
+        const min = pad(date.getMinutes().toString());
+        const sec = pad(date.getSeconds().toString());
+        const tz = -date.getTimezoneOffset();
+        const sign = tz >= 0 ? '+' : '-';
+        const tzHour = pad((tz / 60).toString());
+        const tzMin = pad((tz % 60).toString());
+        return `${year}-${month}-${day}T${hour}:${min}:${sec}${sign}${tzHour}:${tzMin}`;
+    }
+
+      // 現在日付表示
+      function getNowDate() {
+        var today = new Date();
+        var year = today.getFullYear();
+        var month = (today.getMonth()+1).toString().padStart(2, "0");
+        var week = today.getDay();
+        var day = today.getDate().toString().padStart(2, "0");
+        var week_ja= new Array("日","月","火","水","木","金","土");
+        var msg = year + "/" + month + "/" + day + "(" + week_ja[week] + ")";
+        document.getElementById("NowDateArea").innerHTML = msg;
+      }
+      setInterval('getNowDate()',1000);
+
+      // 現在時刻表示
+      function getNowTime() {
+        var nowTime = new Date();
+        var nowHour = nowTime.getHours().toString().padStart(2, "0");
+        var nowMin  = nowTime.getMinutes().toString().padStart(2, "0");
+        var nowSec  = nowTime.getSeconds().toString().padStart(2, "0");
+        var msg = nowHour + ":" + nowMin + ":" + nowSec;
+        document.getElementById("NowTimeArea").innerHTML = msg;
+      }
+      setInterval('getNowTime()',1000);
+
+      // ユーザ選択モーダルを開く
+      // document.querySelector('#userSelectBtn').addEventListener('click', function() {
+      //   userSelectModal.style.display = "block";
+      // });
+      
+      // ユーザ選択モーダル 確定ボタン押下
+      document.querySelector('#userConfirm').addEventListener('click', function() {
+        userSelectModal.style.display = "none";
+
+        var userList = document.getElementById("userSelect");
+        var userNum = userList.selectedIndex;
+        var userInfo = userList.options[userNum].value.split(",");
+        var userCd = userInfo[0];
+        var employeeKey = userInfo[1];
+        var userName = userList.options[userNum].innerText;
+        // console.log(userCd);
+        // console.log(userName);
+        // Local Storage 登録、更新
+        // console.log("LocalStorage登録前");
+        // console.log(localStorage.getItem(userCd));
+        // localStorage.setItem(userCd, userName);
+        // console.log("LocalStorage登録後")
+        // console.log(localStorage.getItem(userCd));
+
+        // JSON形式でLocal Storageに登録
+        userData = {
+          userCd: userCd,
+          userName: userName,
+          employeeKey: employeeKey
+        };
+        localStorage.setItem("userKey", JSON.stringify(userData));
+        console.log(localStorage.getItem("userKey"));
+        document.getElementById("userCd").value = userCd;
+        document.getElementById("userName").value = userName;
+        document.getElementById("employeeKey").value = employeeKey;
+        document.getElementById("userInfoArea").innerHTML = userCd + " / " + userName;
+      });
+
+      // ログアウトボタン押下
+      document.querySelector('#logoutBtn').addEventListener('click', function() {
+        firebase.auth().signOut().then(() => {
+          // Sign-out successful.
+          alert("ログアウトしました。");
+        }).catch((error) => {
+          // An error happened.
+          alert("An error happened.");
+        });
+        loginModal.style.display = "block";
+      });
+
+      // ログインモーダル ログインボタン押下
+      document.querySelector('#loginBtn').addEventListener('click', function() {
+        var email = document.getElementById("email").value;
+        var password = document.getElementById("password").value;
+
+        // 入力チェック
+        if (email == "") {
+          alert("メールアドレスを入力して下さい。");
+          return;
+        } else if (password == "") {
+          alert("パスワードを入力して下さい。");
+          return;
+        }
+
+        // Authentication 認証
+        firebase.auth().signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          // Signed in
+          var user = userCredential.user;
+          console.log(user);
+          console.log(user.uid);
+          // Firestoreからユーザ情報を取得
+          var userDocRef = db.collection("users").doc(user.uid);
+          userDocRef.get().then((userDoc) => {
+            // Firesotre存在チェック
+            if (userDoc.data() === undefined) {
+              alert("Firestore未登録");
+            } else {
+              var userData = userDoc.data()
+              document.getElementById("userCd").value = userData.user_cd;
+              document.getElementById("userName").value = userData.user_name;
+              document.getElementById("employeeKey").value = userData.employee_key;
+              document.getElementById("userInfoArea").innerHTML = userData.user_cd + " / " + userData.user_name;
+              loginModal.style.display = "none";
+            }
+          }).catch((error) => {
+            console.log("Error getting document:", error);
+            alert("Error getting document");
+          });
+        })
+        .catch((error) => {
+          var errorCode = error.code;
+          var errorMessage = error.message;
+          alert("ログイン出来ません。" + error.message);
+        });
+      });
+
+      // ログインモーダル パスワード初期化ボタン押下
+      document.querySelector('#passInitBtn').addEventListener('click', function() {
+        var email = document.getElementById("email").value;
+
+        // 入力チェック
+        if (email == "") {
+          alert("メールアドレスを入力して下さい。");
+          return;
+        }
+
+        firebase.auth().sendPasswordResetEmail(email).then(() => {
+          alert("パスワードの再設定メールを送信しました。");
+        }).catch((error) => {
+          console.log(error.code);
+          console.log(error.message);
+          alert("メールアドレスが正しくありません。");
+        });
+      });
+
+      // 勤務開始モーダルを開く
+      // document.querySelector('#startWorkBtn').addEventListener('click', function() {
+      //   modal.style.display = "block";
+      // });
+
+      // 勤務開始ボタン押下
+      document.querySelector('#startWorkBtn').addEventListener('click', function() {
+        // modal.style.display = "none";
+
+        // 現在日時
+        var dateTime = new Date();
+
+        // ISO8601
+        var isoDate = toISOStringWithTimezone(dateTime);
+
+        // 現在日付
+        var year = dateTime.getFullYear().toString().padStart(4, "0");
+        var month = (dateTime.getMonth()+1).toString().padStart(2, "0");
+        var day = dateTime.getDate().toString().padStart(2, "0");
+        var date = year + month + day;
+
+        // 現在時刻
+        var nowHour = dateTime.getHours().toString().padStart(2, "0");
+        var nowMin  = dateTime.getMinutes().toString().padStart(2, "0");
+        var nowSec  = dateTime.getSeconds().toString().padStart(2, "0");
+        var time = nowHour + ":" + nowMin + ":" + nowSec;
+
+        // ユーザ情報
+        var userCd = document.getElementById("userCd");
+        var userName = document.getElementById("userName");
+        var employeeKey = document.getElementById("employeeKey");
+
+        // 勤務場所
+        // var spaceList = document.getElementById("space");
+        // var num = spaceList.selectedIndex;
+        // var space = spaceList.options[num].innerText;
+
+        // freee勤怠登録
+        var json = JSON.stringify({
+          "employeeKey": employeeKey.value,
+          "date": year + "-" + month + "-" + day,
+          "time": isoDate,
+          "code": "1",
+          "latitude": latitude,
+          "longitude": longitude
+        })
+
+        var xhr = new XMLHttpRequest();
+        // xhr.open("POST", "http://127.0.0.1:5001/attendance-3cf4f/asia-northeast1/setTimerecord");
+        xhr.open("POST", "https://settimerecord-jbvalezpva-an.a.run.app");
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send(json);
+        xhr.responseType = "json";
+        xhr.onload = () => {
+          if (xhr.readyState == 4 && xhr.status == 200) {
+            var data = xhr.response;
+            console.log(data);
+          } else {
+            console.log(`Error: ${xhr.status}`);
+          }
+        };
+
+        // FireBase登録
+        db.collection("attendance").doc(date).collection("users").doc(userCd.value).set({
+          user_name: userName.value,
+          start_time: time,
+          end_time: "",
+          work_space: address,
+          work_space_schedule: "",
+        })
+        .then(() => {
+          console.log("成功")
+          // メッセージモーダル
+          document.getElementById("modalMessage").innerHTML = "勤務開始登録しました。";
+          messageModal.style.display = "block";
+        })
+        .catch((error) => {
+          console.log("エラー")
+        });
+      });
+
+      // 勤務開始モーダルを閉じる
+      // document.querySelector('#close').addEventListener('click', function() {
+      //   modal.style.display = "none";
+      // });
+
+      // 勤務終了モーダルを開く
+      // document.querySelector('#endWorkBtn').addEventListener('click', function() {
+      //   modal2.style.display = "block";
+      // });
+
+      // 勤務終了ボタン押下
+      document.querySelector('#endWorkBtn').addEventListener('click', function() {
+        modal2.style.display = "none";
+
+        // 現在日時
+        var dateTime=new Date();
+
+        // ISO8601
+        var isoDate = toISOStringWithTimezone(dateTime);
+
+        // 現在日付
+        var year = dateTime.getFullYear().toString().padStart(4, "0");
+        var month = (dateTime.getMonth()+1).toString().padStart(2, "0");
+        var day = dateTime.getDate().toString().padStart(2, "0");
+        var date = year + month + day;
+
+        // 現在時刻
+        var nowHour = dateTime.getHours().toString().padStart(2, "0");
+        var nowMin  = dateTime.getMinutes().toString().padStart(2, "0");
+        var nowSec  = dateTime.getSeconds().toString().padStart(2, "0");
+        var time = nowHour + ":" + nowMin + ":" + nowSec;
+
+        // ユーザ情報
+        var userCd = document.getElementById("userCd");
+        var userName = document.getElementById("userName");
+        var employeeKey = document.getElementById("employeeKey");
+
+        // 勤務予定場所
+        // var spaceScheduleList = document.getElementById("space_schedule");
+        // var num2 = spaceScheduleList.selectedIndex;
+        // var spaceSchedule = spaceScheduleList.options[num2].innerText;
+
+        // freee勤怠登録
+        var json = JSON.stringify({
+          "employeeKey": employeeKey.value,
+          "date": year + "-" + month + "-" + day,
+          "time": isoDate,
+          "code": "2",
+          "latitude": latitude,
+          "longitude": longitude
+        })
+
+        console.log(json);
+
+        var xhr = new XMLHttpRequest();
+        // xhr.open("POST", "http://127.0.0.1:5001/attendance-3cf4f/asia-northeast1/setTimerecord");
+        xhr.open("POST", "https://settimerecord-jbvalezpva-an.a.run.app");
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send(json);
+        xhr.responseType = "json";
+        xhr.onload = () => {
+          if (xhr.readyState == 4 && xhr.status == 200) {
+            var data = xhr.response;
+            console.log(data);
+          } else {
+            console.log(`Error: ${xhr.status}`);
+          }
+        };
+
+        // 勤務開始情報を取得
+        var docRef = db.collection("attendance").doc(date).collection("users").doc(userCd.value);
+        docRef.get().then((doc) => {
+          if (doc.exists) {
+            attendance = doc.data();
+            console.log("Document data:", attendance.user_name);
+            // FireBase登録
+            db.collection("attendance").doc(date).collection("users").doc(userCd.value).set({
+              user_name: attendance.user_name,
+              start_time: attendance.start_time,
+              end_time: time,
+              work_space: attendance.work_space,
+            })
+            .then(() => {
+              console.log("成功")
+              // メッセージモーダル
+              document.getElementById("modalMessage").innerHTML = "勤務終了登録しました。";
+              messageModal.style.display = "block";
+            })
+            .catch((error) => {
+              console.log("エラー")
+            });
+          } else {
+            console.log("No such document!");
+          }
+        }).catch((error) => {
+            console.log("Error getting document:", error);
+        });
+
+        // FireBase登録
+        // db.collection("attendance").doc(date).collection("users").doc(userCd.value).set({
+        //   user_name: userName.value,
+        //   end_time: time,
+        //   work_space_schedule: spaceSchedule,
+        // })
+        // .then(() => {
+        //   console.log("成功")
+        // })
+        // .catch((error) => {
+        //   console.log("エラー")
+        // });
+      });
+
+      // 勤務終了モーダルを閉じる
+      // document.querySelector('#close2').addEventListener('click', function() {
+      //   modal2.style.display = "none";
+      // });
+
+      // メッセージモーダルを閉じる
+      document.querySelector('#close3').addEventListener('click', function() {
+        messageModal.style.display = "none";
+      });
+
+      // FireStore 存在チェック
+      // document.querySelector('#btn1').addEventListener('click', function() {
+      //   db.collection('users').add({
+      //       first: 'Ada',
+      //       last: 'Lovelace',
+      //       born: 1815,
+      //   })
+      //   .then(function(docRef) {
+      //       console.log('Document written with ID: ', docRef.id);
+      //   })
+      //   .catch(function(error) {
+      //       console.error('Error adding document: ', error);
+      //   });
+      // });
+
+    </script>
+  </body>
+</html>
