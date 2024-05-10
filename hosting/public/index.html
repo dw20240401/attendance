@@ -45,19 +45,19 @@
       const db = firebase.firestore();
 
       // KING OF TIME WebAPI
-      const xhr = new XMLHttpRequest();
+      // const xhr = new XMLHttpRequest();
       // xhr.withCredentials = true;
-      xhr.open("GET", "https://api.kingtime.jp/v1.0/daily-workings/timerecord?start=2024-04-23&end=2024-04-23&additionalFields=currentDateEmployee");
+      // xhr.open("GET", "https://api.kingtime.jp/v1.0/daily-workings/timerecord?start=2024-04-23&end=2024-04-23&additionalFields=currentDateEmployee");
       // xhr.setRequestHeader("Access-Control-Allow-Origin", "*");
-      xhr.setRequestHeader("Authorization", "Bearer 07d05c20a9fb41a5b1be08888d2f2654");
-      xhr.setRequestHeader("Content-Type", "application/json");
-      xhr.send();
+      // xhr.setRequestHeader("Authorization", "Bearer 07d05c20a9fb41a5b1be08888d2f2654");
+      // xhr.setRequestHeader("Content-Type", "application/json");
+      // xhr.send();
 
-      xhr.onreadystatechange = function() {
-        if(xhr.readyState === 4 && xhr.status === 200) {
-          console.log(xhr.responseText);
-        }
-      }
+      // xhr.onreadystatechange = function() {
+      //   if(xhr.readyState === 4 && xhr.status === 200) {
+      //     console.log(xhr.responseText);
+      //   }
+      // }
 
       // 現在日時セット
       function setNowDataTime() {
@@ -156,7 +156,7 @@
                 tbl.appendChild(tr);
               }
             }).catch((error) => {
-              console.log("🚨🚨🚨")
+              console.log("🚨🚨🚨", error)
             });
           });
         }).catch((error) => {
