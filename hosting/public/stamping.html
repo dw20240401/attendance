@@ -179,65 +179,6 @@
       const app = firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
 
-      // URLから社員番号を取得
-      // const urlParams = new URLSearchParams(window.location.search);
-      // const id = urlParams.get('id');
-      // var msg = "";
-
-      // var docRef = db.collection("users").doc(id);
-      // docRef.get().then((doc) => {
-      //   if (doc.exists) {
-      //     user = doc.data();
-      //     document.getElementById("userCd").value = id;
-      //     document.getElementById("userName").value = user.user_name;
-      //     msg = id + "/" + user.user_name;
-      //     document.getElementById("userInfoArea").innerHTML = msg;
-      //   } else {
-      //     console.log("No such document!");
-      //     msg = "🚨";
-      //     document.getElementById("userInfoArea").innerHTML = msg;
-
-      //   }
-      // }).catch((error) => {
-      //     console.log("Error getting document:", error);
-      //     msg = "🚨🚨🚨";
-      //     document.getElementById("userInfoArea").innerHTML = msg;
-      // });
-      // console.log(msg);
-      // document.getElementById("userInfoArea").innerHTML = msg;
-
-      // ユーザ一覧を取得してセレクトボックスにセット
-      // var userSelect = document.getElementById("userSelect");
-      // var usersDocRef = db.collection("users");
-      // usersDocRef.get().then((userDocs) => {
-      //   userDocs.forEach(userDoc => {
-      //     var userOption = document.createElement("option");
-      //     user = userDoc.data();
-      //     userOption.value = user.user_cd + "," + user.employee_key;
-      //     userOption.text = user.user_name;
-      //     userSelect.appendChild(userOption);
-      //   });
-      // }).catch((error) => {
-      //   console.log("Error getting document:", error);
-      // });
-
-      // Local Storage 読み込み
-      // var localData = localStorage.getItem("userKey")
-      // var localUser = JSON.parse(localData);
-      // if(!localUser) {
-      //   console.log("🚨nullです。");
-      //   loginModal.style.display = "block";
-      // } else {
-      //   console.log("LocalStorega読込");
-      //   console.log(localUser.userCd);
-      //   console.log(localUser.userName);
-      //   console.log(localUser.employeeKey);
-      //   document.getElementById("userCd").value = localUser.userCd;
-      //   document.getElementById("userName").value = localUser.userName;
-      //   document.getElementById("employeeKey").value = localUser.employeeKey;
-      //   document.getElementById("userInfoArea").innerHTML = localUser.userCd + " / " + localUser.userName;
-      // }
-
       // ログイン状態チェック
       firebase.auth().onAuthStateChanged(user => {
         if (user) {
@@ -250,16 +191,33 @@
               loginModal.style.display = "block";
             } else {
               var userData = userDoc.data()
+              console.log(userData);
               document.getElementById("userCd").value = userData.user_cd;
               document.getElementById("userName").value = userData.user_name;
-              document.getElementById("employeeKey").value = userData.employee_key;
               document.getElementById("userInfoArea").innerHTML = userData.user_cd + " / " + userData.user_name;
-              loginModal.style.display = "none";
+              // Firestore privateから従業員キーを取得
+              var userPrivateDocRef = db.collection("users").doc(user.uid).collection("private").doc("freee");
+              userPrivateDocRef.get().then((userPrivateDoc) => {
+                var userPrivateData = userPrivateDoc.data()
+                console.log(userPrivateData);
+                // Firebase存在チェック
+                if (userPrivateData == undefined) {
+                  alert("Firestore freee情報未登録");
+                  loginModal.style.display = "block";
+                } else {
+                  document.getElementById("employeeKey").value = userPrivateData.employee_key
+                  loginModal.style.display = "none";
+                }
+              }).catch((error) => {
+                console.log("Firestore freee情報取得エラー:", error);
+                loginModal.style.display = "block";
+                alert("Firestore freee情報取得エラー");
+              });
             }
           }).catch((error) => {
-            console.log("Error getting document:", error);
+            console.log("Firestore ユーザ情報取得エラー:", error);
             loginModal.style.display = "block";
-            alert("Error getting document");
+            alert("Firestore ユーザ情報取得エラー");
           });
         } else {
           // 未ログイン
@@ -274,8 +232,6 @@
       navigator.geolocation.getCurrentPosition((position) => {
         latitude = position.coords.latitude;
         longitude = position.coords.longitude
-        console.log(latitude);
-        console.log(longitude);
 
         // 緯度経度から住所を取得
         var xhr = new XMLHttpRequest();
@@ -294,6 +250,8 @@
           }
         };
       });
+      console.log(latitude);
+      console.log(longitude);
 
       // ISO8601(JST)
       function toISOStringWithTimezone(date) {
@@ -337,51 +295,11 @@
       }
       setInterval('getNowTime()',1000);
 
-      // ユーザ選択モーダルを開く
-      // document.querySelector('#userSelectBtn').addEventListener('click', function() {
-      //   userSelectModal.style.display = "block";
-      // });
-      
-      // ユーザ選択モーダル 確定ボタン押下
-      document.querySelector('#userConfirm').addEventListener('click', function() {
-        userSelectModal.style.display = "none";
-
-        var userList = document.getElementById("userSelect");
-        var userNum = userList.selectedIndex;
-        var userInfo = userList.options[userNum].value.split(",");
-        var userCd = userInfo[0];
-        var employeeKey = userInfo[1];
-        var userName = userList.options[userNum].innerText;
-        // console.log(userCd);
-        // console.log(userName);
-        // Local Storage 登録、更新
-        // console.log("LocalStorage登録前");
-        // console.log(localStorage.getItem(userCd));
-        // localStorage.setItem(userCd, userName);
-        // console.log("LocalStorage登録後")
-        // console.log(localStorage.getItem(userCd));
-
-        // JSON形式でLocal Storageに登録
-        userData = {
-          userCd: userCd,
-          userName: userName,
-          employeeKey: employeeKey
-        };
-        localStorage.setItem("userKey", JSON.stringify(userData));
-        console.log(localStorage.getItem("userKey"));
-        document.getElementById("userCd").value = userCd;
-        document.getElementById("userName").value = userName;
-        document.getElementById("employeeKey").value = employeeKey;
-        document.getElementById("userInfoArea").innerHTML = userCd + " / " + userName;
-      });
-
       // ログアウトボタン押下
       document.querySelector('#logoutBtn').addEventListener('click', function() {
         firebase.auth().signOut().then(() => {
-          // Sign-out successful.
           alert("ログアウトしました。");
         }).catch((error) => {
-          // An error happened.
           alert("An error happened.");
         });
         loginModal.style.display = "block";
@@ -418,9 +336,25 @@
               var userData = userDoc.data()
               document.getElementById("userCd").value = userData.user_cd;
               document.getElementById("userName").value = userData.user_name;
-              document.getElementById("employeeKey").value = userData.employee_key;
               document.getElementById("userInfoArea").innerHTML = userData.user_cd + " / " + userData.user_name;
-              loginModal.style.display = "none";
+
+              // Firestore privateから従業員キーを取得
+              var userPrivateDocRef = db.collection("users").doc(user.uid).collection("private").doc("freee");
+              userPrivateDocRef.get().then((userPrivateDoc) => {
+                var userPrivateData = userPrivateDoc.data()
+                // Firebase存在チェック
+                if (userPrivateData == undefined) {
+                  alert("Firestore freee情報未登録");
+                  loginModal.style.display = "block";
+                } else {
+                  document.getElementById("employeeKey").value = userPrivateData.employee_key
+                  loginModal.style.display = "none";
+                }
+              }).catch((error) => {
+                console.log("Firestore freee情報取得エラー:", error);
+                loginModal.style.display = "block";
+                alert("Firestore freee情報取得エラー");
+              });
             }
           }).catch((error) => {
             console.log("Error getting document:", error);
@@ -453,14 +387,13 @@
         });
       });
 
-      // 勤務開始モーダルを開く
-      // document.querySelector('#startWorkBtn').addEventListener('click', function() {
-      //   modal.style.display = "block";
-      // });
-
       // 勤務開始ボタン押下
       document.querySelector('#startWorkBtn').addEventListener('click', function() {
-        // modal.style.display = "none";
+        // 緯度経度が取得できているか
+        if (latitude == "" && longitude == "") {
+          alert("端末の位置情報利用が許可されていません。");
+          return;
+        }
 
         // 現在日時
         var dateTime = new Date();
@@ -530,23 +463,18 @@
           messageModal.style.display = "block";
         })
         .catch((error) => {
-          console.log("エラー")
+          console.log("エラー");
+          messageModal.style.display = "block";
         });
       });
 
-      // 勤務開始モーダルを閉じる
-      // document.querySelector('#close').addEventListener('click', function() {
-      //   modal.style.display = "none";
-      // });
-
-      // 勤務終了モーダルを開く
-      // document.querySelector('#endWorkBtn').addEventListener('click', function() {
-      //   modal2.style.display = "block";
-      // });
-
       // 勤務終了ボタン押下
       document.querySelector('#endWorkBtn').addEventListener('click', function() {
-        modal2.style.display = "none";
+        // 緯度経度が取得できているか
+        if (latitude == "" && longitude == "") {
+          alert("端末の位置情報利用が許可されていません。");
+          return;
+        }
 
         // 現在日時
         var dateTime=new Date();
@@ -631,45 +559,12 @@
         }).catch((error) => {
             console.log("Error getting document:", error);
         });
-
-        // FireBase登録
-        // db.collection("attendance").doc(date).collection("users").doc(userCd.value).set({
-        //   user_name: userName.value,
-        //   end_time: time,
-        //   work_space_schedule: spaceSchedule,
-        // })
-        // .then(() => {
-        //   console.log("成功")
-        // })
-        // .catch((error) => {
-        //   console.log("エラー")
-        // });
       });
-
-      // 勤務終了モーダルを閉じる
-      // document.querySelector('#close2').addEventListener('click', function() {
-      //   modal2.style.display = "none";
-      // });
 
       // メッセージモーダルを閉じる
       document.querySelector('#close3').addEventListener('click', function() {
         messageModal.style.display = "none";
       });
-
-      // FireStore 存在チェック
-      // document.querySelector('#btn1').addEventListener('click', function() {
-      //   db.collection('users').add({
-      //       first: 'Ada',
-      //       last: 'Lovelace',
-      //       born: 1815,
-      //   })
-      //   .then(function(docRef) {
-      //       console.log('Document written with ID: ', docRef.id);
-      //   })
-      //   .catch(function(error) {
-      //       console.error('Error adding document: ', error);
-      //   });
-      // });
 
     </script>
   </body>
