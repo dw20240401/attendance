@@ -27,24 +27,30 @@ label, input {
 }
 
 .main_contents_wrapper {
-  /* width: 50%;
-  margin: 0 auto; */
   font-size: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  /* line-height:0.5; */
-  line-height: normal;
+  line-height:0.1;
 }
 
-.time {
+.date-time {
+  text-align: center;
+}
+
+#NowTimeArea {
   font-size: 40px;
-  margin:1px;
+}
+
+.button-area {
+  display: inline-block;
+  height: 60px;
+  text-align: center;
+  line-height: 1;
 }
 
 .start_work_btn {
-  display:block;
   height:50px;
   background: #03ffff;
   color: #000000;
@@ -53,13 +59,18 @@ label, input {
   font-size: 20px;
   text-align: center;
   cursor: pointer;
-  display:flex;
   align-items: center;
   justify-content: center;
+  line-height: 1;
+  margin: 15px;
+}
+
+.start_work_btn:disabled {
+  background: #a5a5a5;
+  cursor: pointer;
 }
 
 .end_work_btn {
-  display:block;
   height:50px;
   background: #ff3e03;
   color: #000000;
@@ -68,9 +79,13 @@ label, input {
   font-size: 20px;
   text-align: center;
   cursor: pointer;
-  display:flex;
   align-items: center;
   justify-content: center;
+}
+
+.end_work_btn:disabled {
+  background: #a5a5a5;
+  cursor: pointer;
 }
 
 .modal {
