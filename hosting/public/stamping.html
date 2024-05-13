@@ -14,54 +14,29 @@
     </header>
     <div class="main_contents_wrapper">
       <div class="user">
-        <p id="userInfoArea"></p>
+        <p id="userInfoArea">/</p>
         <input type="hidden" id="userCd">
         <input type="hidden" id="userName">
         <input type="hidden" id="employeeKey">
       </div>
-      <div class="date">
-        <p id="NowDateArea"></p>
-      </div>
-      <div class="time">
-        <p id="NowTimeArea"></p>
+      <div class="wp-block-spacer" style="height: 20px;" aria-hidden="true"></div>
+      <div class="date-time">
+        <p class="date" id="NowDateArea">    /  /  ()</p>
+        <p class="time" id="NowTimeArea">  :  :  </p>
       </div>
       <div class="address">
-        <p id="nowAddressArea"></p>
-      </div>
-      <div>
-        <button class="start_work_btn" type="button" id="startWorkBtn">勤務開始</button>
+        <p id="nowAddressArea">現在位置情報取得中…</p>
       </div>
       <div class="wp-block-spacer" style="height: 20px;" aria-hidden="true"></div>
-      <div class="endWorkBtn">
+      <div class="button-area">
+        <button class="start_work_btn" type="button" id="startWorkBtn">勤務開始</button>
         <button class="end_work_btn" type="button" id="endWorkBtn">勤務終了</button>
-      </div>
+      </div>      
       <div class="wp-block-spacer" style="height: 100px;" aria-hidden="true"></div>
-      <!-- <div>
-        <button class="user_select_btn" type="button" id="userSelectBtn">ユーザ選択</button>
-      </div> -->
       <div>
         <button class="user_select_btn" type="button" id="logoutBtn">ログアウト</button>
       </div>
     </div>
-
-    <!-- ユーザ選択モーダル -->
-    <div id="userSelectModal" class="modal">
-      <div class="modal-content">
-        <div>
-          <p>ユーザ情報を選択して下さい</p>
-        </div>
-        <div>
-          <select id="userSelect" required>
-            <option value="" selected disabled>選択してください</option>
-          </select>
-        </div>
-        <br>
-        <div>
-          <button class="confirm_btn" type="button" id="userConfirm">確　　　定</button>
-        </div>
-      </div>
-    </div>
-
     <!-- ログインモーダル -->
     <div id="loginModal" class="modal">
       <div class="modal-content">
@@ -86,57 +61,6 @@
       </div>
     </div>
 
-    <!-- 勤務開始モーダル -->
-    <div id="modal" class="modal">
-      <div class="modal-content">
-        <div>
-          <p>勤務場所を選択して下さい</p>
-        </div>
-        <div>
-          <select id="space">
-            <option value="横浜本社">横浜本社</option>
-            <option value="在宅勤務">在宅勤務</option>
-            <option value="外出">外出</option>
-            <option value="有給">有給</option>
-          </select>
-        </div>
-        <div class="wp-block-spacer" style="height: 20px;" aria-hidden="true"></div>
-        <div>
-          <button class="confirm_btn" type="button" id="startConfirm">確　　　定</button>
-        </div>
-        <div class="wp-block-spacer" style="height: 20px;" aria-hidden="true"></div>
-        <div>
-          <button type="button" id="close">閉　じ　る</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 勤務終了モーダル -->
-    <div id="modal2" class="modal">
-      <div class="modal-content">
-        <div>
-          <!-- <label for="space_schedule">明日の勤務予定場所を選択して下さい</label> -->
-          <p>明日の勤務予定場所を選択して下さい</p>
-        </div>
-        <div>
-          <select id="space_schedule">
-            <option value="横浜本社">横浜本社</option>
-            <option value="在宅勤務">在宅勤務</option>
-            <option value="外出">外出</option>
-            <option value="有給">有給</option>
-          </select>
-        </div>
-        <div class="wp-block-spacer" style="height: 20px;" aria-hidden="true"></div>
-        <div>
-          <button class="confirm_btn" type="button" id="endConfirm">確　　　定</button>
-        </div>
-        <div class="wp-block-spacer" style="height: 20px;" aria-hidden="true"></div>
-        <div>
-          <button type="button" id="close2">閉　じ　る</button>
-        </div>
-      </div>
-    </div>
-
     <!-- メッセージモーダル -->
     <div id="messageModal" class="modal">
       <div class="modal-content">
@@ -154,7 +78,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-auth-compat.js"></script>
     <script>
-      // FireStore
+      // Firebase 開発環境
       const firebaseConfig = {
         apiKey: "AIzaSyCL5ftfrlwsjTa4O-DjPqLtJA-t0JHDLoU",
         authDomain: "attendance-3cf4f.firebaseapp.com",
@@ -164,8 +88,24 @@
         appId: "1:442106731625:web:a3c7b0f4521bfd88c096f8",
         measurementId: "G-1PN91D78KW"     
       };
+
+      // Firebase 本番環境
+      // const firebaseConfig = {
+      //   apiKey: "AIzaSyCsq6W-1iYaTXE-l20FRqGyOJaG_QWI0NQ",
+      //   authDomain: "timerecord-ba98d.firebaseapp.com",
+      //   projectId: "timerecord-ba98d",
+      //   storageBucket: "timerecord-ba98d.appspot.com",
+      //   messagingSenderId: "473420527066",
+      //   appId: "1:473420527066:web:2dbbf9deea5c0c540b7ce3",
+      //   measurementId: "G-K7WLNRDMZ8"
+      // };
+
       const app = firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
+      
+      // ボタン非活性化
+      document.getElementById("startWorkBtn").disabled = true;
+      document.getElementById("endWorkBtn").disabled = true;
 
       // ログイン状態チェック
       firebase.auth().onAuthStateChanged(user => {
@@ -217,7 +157,10 @@
       var latitude = "";
       var longitude = "";
       var address = "";
-      navigator.geolocation.getCurrentPosition((position) => {
+
+      function successCallback(position) {
+        // 位置情報を利用する処理
+        console.log("位置情報を利用する処理");
         latitude = position.coords.latitude;
         longitude = position.coords.longitude
 
@@ -237,9 +180,16 @@
             console.log(`Error: ${xhr.status}`);
           }
         };
-      });
-      console.log(latitude);
-      console.log(longitude);
+      }
+      function errorCallback(error) {
+        console.log(error);
+        alert("端末の位置情報利用が許可されていません。");
+      }
+
+      var options = {
+        timeout: 10000 // 10秒でタイムアウトするように設定する
+      };
+      navigator.geolocation.getCurrentPosition(successCallback, errorCallback, options);
 
       // ISO8601(JST)
       function toISOStringWithTimezone(date) {
@@ -283,6 +233,15 @@
       }
       setInterval('getNowTime()',1000);
 
+      // ボタン活性化チェック
+      function buttonActivityCheck() {
+        if (latitude != "" && longitude != "" && address != "") {
+          document.getElementById("startWorkBtn").disabled = false;
+          document.getElementById("endWorkBtn").disabled = false;
+        }
+      }
+      setInterval('buttonActivityCheck()',100);
+
       // ログアウトボタン押下
       document.querySelector('#logoutBtn').addEventListener('click', function() {
         firebase.auth().signOut().then(() => {
@@ -314,40 +273,79 @@
           var user = userCredential.user;
           console.log(user);
           console.log(user.uid);
-          // Firestoreからユーザ情報を取得
-          var userDocRef = db.collection("users").doc(user.uid);
-          userDocRef.get().then((userDoc) => {
-            // Firesotre存在チェック
-            if (userDoc.data() === undefined) {
-              alert("Firestore未登録");
-            } else {
-              var userData = userDoc.data()
-              document.getElementById("userCd").value = userData.user_cd;
-              document.getElementById("userName").value = userData.user_name;
-              document.getElementById("userInfoArea").innerHTML = userData.user_cd + " / " + userData.user_name;
 
-              // Firestore privateから従業員キーを取得
-              var userPrivateDocRef = db.collection("users").doc(user.uid).collection("private").doc("freee");
-              userPrivateDocRef.get().then((userPrivateDoc) => {
-                var userPrivateData = userPrivateDoc.data()
-                // Firebase存在チェック
-                if (userPrivateData == undefined) {
-                  alert("Firestore freee情報未登録");
-                  loginModal.style.display = "block";
-                } else {
-                  document.getElementById("employeeKey").value = userPrivateData.employee_key
-                  loginModal.style.display = "none";
-                }
+          // Firesore ユーザマスタから情報取得(New)
+          var divisionDocRef = db.collection("users2");
+          divisionDocRef.get().then((divisionDocs) => {
+            divisionDocs.forEach(divisionDoc => {
+              // 部門毎のメンバーから検索
+              var membersDocRef = db.collection("users2").doc(divisionDoc.id).collection("members").doc(user.uid);
+              membersDocRef.get().then((membersDoc) => {
+                if (membersDoc.data() != undefined) {
+                  var userData = membersDoc.data()
+                  document.getElementById("userCd").value = userData.user_cd;
+                  document.getElementById("userName").value = userData.user_name;
+                  document.getElementById("userInfoArea").innerHTML = userData.user_cd + " / " + userData.user_name;
+                  // Firestore privateから従業員キーを取得
+                  var userPrivateDocRef = db.collection("users2").doc(divisionDoc.id).collection("members").doc(user.uid).collection("private").doc("freee");
+                  userPrivateDocRef.get().then((userPrivateDoc) => {
+                    var userPrivateData = userPrivateDoc.data()
+                    // Firebase存在チェック
+                    if (userPrivateData == undefined) {
+                      alert("Firestore freee情報未登録");
+                      loginModal.style.display = "block";
+                    } else {
+                      document.getElementById("employeeKey").value = userPrivateData.employee_key
+                      loginModal.style.display = "none";
+                    }
+                  }).catch((error) => {
+                    console.log("Firestore freee情報取得エラー:", error);
+                    loginModal.style.display = "block";
+                    alert("Firestore freee情報取得エラー");
+                  });
+                } 
               }).catch((error) => {
-                console.log("Firestore freee情報取得エラー:", error);
-                loginModal.style.display = "block";
-                alert("Firestore freee情報取得エラー");
+                console.log("Error getting document:", error);
               });
-            }
+            });
           }).catch((error) => {
-            console.log("Error getting document:", error);
-            alert("Error getting document");
+              console.log("Error getting document:", error);
           });
+
+          // // Firestoreからユーザ情報を取得
+          // var userDocRef = db.collection("users").doc(user.uid);
+          // userDocRef.get().then((userDoc) => {
+          //   // Firesotre存在チェック
+          //   if (userDoc.data() === undefined) {
+          //     alert("Firestore未登録");
+          //   } else {
+          //     var userData = userDoc.data()
+          //     document.getElementById("userCd").value = userData.user_cd;
+          //     document.getElementById("userName").value = userData.user_name;
+          //     document.getElementById("userInfoArea").innerHTML = userData.user_cd + " / " + userData.user_name;
+
+          //     // Firestore privateから従業員キーを取得
+          //     var userPrivateDocRef = db.collection("users").doc(user.uid).collection("private").doc("freee");
+          //     userPrivateDocRef.get().then((userPrivateDoc) => {
+          //       var userPrivateData = userPrivateDoc.data()
+          //       // Firebase存在チェック
+          //       if (userPrivateData == undefined) {
+          //         alert("Firestore freee情報未登録");
+          //         loginModal.style.display = "block";
+          //       } else {
+          //         document.getElementById("employeeKey").value = userPrivateData.employee_key
+          //         loginModal.style.display = "none";
+          //       }
+          //     }).catch((error) => {
+          //       console.log("Firestore freee情報取得エラー:", error);
+          //       loginModal.style.display = "block";
+          //       alert("Firestore freee情報取得エラー");
+          //     });
+          //   }
+          // }).catch((error) => {
+          //   console.log("Error getting document:", error);
+          //   alert("Error getting document");
+          // });
         })
         .catch((error) => {
           var errorCode = error.code;
@@ -378,8 +376,8 @@
       // 勤務開始ボタン押下
       document.querySelector('#startWorkBtn').addEventListener('click', function() {
         // 緯度経度が取得できているか
-        if (latitude == "" && longitude == "") {
-          alert("端末の位置情報利用が許可されていません。");
+        if (latitude == "" || longitude == "" || address == "") {
+          alert("現在位置情報が取得できていません。");
           return;
         }
 
@@ -427,12 +425,19 @@
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.send(json);
         xhr.responseType = "json";
+        var data = "";
         xhr.onload = () => {
           if (xhr.readyState == 4 && xhr.status == 200) {
-            var data = xhr.response;
-            console.log(data);
+            data = xhr.response;
+            if ("errors" in data) {
+              console.log(data);
+              alert("freee勤怠の打刻登録に失敗しました。");
+              return;
+            }
           } else {
             console.log(`Error: ${xhr.status}`);
+            alert("freee勤怠の打刻登録に失敗しました。");
+            return;
           }
         };
 
@@ -445,22 +450,21 @@
           work_space_schedule: "",
         })
         .then(() => {
-          console.log("成功")
           // メッセージモーダル
           document.getElementById("modalMessage").innerHTML = "勤務開始登録しました。";
           messageModal.style.display = "block";
         })
         .catch((error) => {
-          console.log("エラー");
-          messageModal.style.display = "block";
+          console.log(error);
+          alert("Firestoreの登録に失敗しました。");
         });
       });
 
       // 勤務終了ボタン押下
       document.querySelector('#endWorkBtn').addEventListener('click', function() {
         // 緯度経度が取得できているか
-        if (latitude == "" && longitude == "") {
-          alert("端末の位置情報利用が許可されていません。");
+        if (latitude == "" || longitude == "" || address == "") {
+          alert("現在位置情報が取得できていません。");
           return;
         }
 
@@ -513,9 +517,13 @@
         xhr.onload = () => {
           if (xhr.readyState == 4 && xhr.status == 200) {
             var data = xhr.response;
-            console.log(data);
+            if ("errors" in data) {
+              console.log(data);
+              alert("freee勤怠の打刻登録に失敗しました。");
+            }
           } else {
             console.log(`Error: ${xhr.status}`);
+            alert("freee勤怠の打刻登録に失敗しました。");
           }
         };
 
@@ -533,19 +541,21 @@
               work_space: attendance.work_space,
             })
             .then(() => {
-              console.log("成功")
               // メッセージモーダル
               document.getElementById("modalMessage").innerHTML = "勤務終了登録しました。";
               messageModal.style.display = "block";
             })
             .catch((error) => {
-              console.log("エラー")
+              console.log(error);
+              alert("Firestoreの登録に失敗しました。");
             });
           } else {
             console.log("No such document!");
+            alert("Firestoreの登録に失敗しました。");
           }
         }).catch((error) => {
             console.log("Error getting document:", error);
+            alert("Firestoreの登録に失敗しました。");
         });
       });
 
