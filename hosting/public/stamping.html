@@ -429,6 +429,8 @@
         xhr.onload = () => {
           if (xhr.readyState == 4 && xhr.status == 200) {
             data = xhr.response;
+            console.log(data);
+            alert(JSON.stringify(data));
             if ("errors" in data) {
               console.log(data);
               alert("freee勤怠の打刻登録に失敗しました。");
@@ -517,6 +519,8 @@
         xhr.onload = () => {
           if (xhr.readyState == 4 && xhr.status == 200) {
             var data = xhr.response;
+            console.log(data);
+            alert(JSON.stringify(data));
             if ("errors" in data) {
               console.log(data);
               alert("freee勤怠の打刻登録に失敗しました。");
