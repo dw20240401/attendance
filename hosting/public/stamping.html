@@ -110,43 +110,85 @@
       // ログイン状態チェック
       firebase.auth().onAuthStateChanged(user => {
         if (user) {
-          // Firestoreからユーザ情報を取得
-          var userDocRef = db.collection("users").doc(user.uid);
-          userDocRef.get().then((userDoc) => {
-            // Firesotre存在チェック
-            if (userDoc.data() === undefined) {
-              alert("Firestore未登録");
-              loginModal.style.display = "block";
-            } else {
-              var userData = userDoc.data()
-              console.log(userData);
-              document.getElementById("userCd").value = userData.user_cd;
-              document.getElementById("userName").value = userData.user_name;
-              document.getElementById("userInfoArea").innerHTML = userData.user_cd + " / " + userData.user_name;
-              // Firestore privateから従業員キーを取得
-              var userPrivateDocRef = db.collection("users").doc(user.uid).collection("private").doc("freee");
-              userPrivateDocRef.get().then((userPrivateDoc) => {
-                var userPrivateData = userPrivateDoc.data()
-                console.log(userPrivateData);
-                // Firebase存在チェック
-                if (userPrivateData == undefined) {
-                  alert("Firestore freee情報未登録");
-                  loginModal.style.display = "block";
-                } else {
-                  document.getElementById("employeeKey").value = userPrivateData.employee_key
-                  loginModal.style.display = "none";
-                }
+          // Firesore ユーザマスタから情報取得(New)
+          var divisionDocRef = db.collection("users2");
+          divisionDocRef.get().then((divisionDocs) => {
+            divisionDocs.forEach(divisionDoc => {
+              // 部門毎のメンバーから検索
+              var membersDocRef = db.collection("users2").doc(divisionDoc.id).collection("members").doc(user.uid);
+              membersDocRef.get().then((membersDoc) => {
+                if (membersDoc.data() != undefined) {
+                  var userData = membersDoc.data()
+                  document.getElementById("userCd").value = userData.user_cd;
+                  document.getElementById("userName").value = userData.user_name;
+                  document.getElementById("userInfoArea").innerHTML = userData.user_cd + " / " + userData.user_name;
+                  // Firestore privateから従業員キーを取得
+                  var userPrivateDocRef = db.collection("users2").doc(divisionDoc.id).collection("members").doc(user.uid).collection("private").doc("freee");
+                  userPrivateDocRef.get().then((userPrivateDoc) => {
+                    var userPrivateData = userPrivateDoc.data()
+                    // Firebase存在チェック
+                    if (userPrivateData == undefined) {
+                      alert("Firestore freee情報未登録");
+                      loginModal.style.display = "block";
+                    } else {
+                      document.getElementById("employeeKey").value = userPrivateData.employee_key
+                      loginModal.style.display = "none";
+                    }
+                  }).catch((error) => {
+                    console.log("Firestore freee情報取得エラー:", error);
+                    loginModal.style.display = "block";
+                    alert("Firestore freee情報取得エラー");
+                  });
+                } 
               }).catch((error) => {
-                console.log("Firestore freee情報取得エラー:", error);
+                console.log("Firestore ユーザ情報取得エラー:", error);
                 loginModal.style.display = "block";
-                alert("Firestore freee情報取得エラー");
+                alert("Firestore ユーザ情報取得エラー");
               });
-            }
+            });
           }).catch((error) => {
-            console.log("Firestore ユーザ情報取得エラー:", error);
-            loginModal.style.display = "block";
-            alert("Firestore ユーザ情報取得エラー");
+              console.log("Firestore ユーザ情報取得エラー:", error);
+              loginModal.style.display = "block";
+              alert("Firestore ユーザ情報取得エラー");
           });
+
+          // // Firestoreからユーザ情報を取得
+          // var userDocRef = db.collection("users").doc(user.uid);
+          // userDocRef.get().then((userDoc) => {
+          //   // Firesotre存在チェック
+          //   if (userDoc.data() === undefined) {
+          //     alert("Firestore未登録");
+          //     loginModal.style.display = "block";
+          //   } else {
+          //     var userData = userDoc.data()
+          //     console.log(userData);
+          //     document.getElementById("userCd").value = userData.user_cd;
+          //     document.getElementById("userName").value = userData.user_name;
+          //     document.getElementById("userInfoArea").innerHTML = userData.user_cd + " / " + userData.user_name;
+          //     // Firestore privateから従業員キーを取得
+          //     var userPrivateDocRef = db.collection("users").doc(user.uid).collection("private").doc("freee");
+          //     userPrivateDocRef.get().then((userPrivateDoc) => {
+          //       var userPrivateData = userPrivateDoc.data()
+          //       console.log(userPrivateData);
+          //       // Firebase存在チェック
+          //       if (userPrivateData == undefined) {
+          //         alert("Firestore freee情報未登録");
+          //         loginModal.style.display = "block";
+          //       } else {
+          //         document.getElementById("employeeKey").value = userPrivateData.employee_key
+          //         loginModal.style.display = "none";
+          //       }
+          //     }).catch((error) => {
+          //       console.log("Firestore freee情報取得エラー:", error);
+          //       loginModal.style.display = "block";
+          //       alert("Firestore freee情報取得エラー");
+          //     });
+          //   }
+          // }).catch((error) => {
+          //   console.log("Firestore ユーザ情報取得エラー:", error);
+          //   loginModal.style.display = "block";
+          //   alert("Firestore ユーザ情報取得エラー");
+          // });
         } else {
           // 未ログイン
           loginModal.style.display = "block";
@@ -207,7 +249,7 @@
         const tzHour = pad((tz / 60).toString());
         const tzMin = pad((tz % 60).toString());
         return `${year}-${month}-${day}T${hour}:${min}:${sec}${sign}${tzHour}:${tzMin}`;
-    }
+      }
 
       // 現在日付表示
       function getNowDate() {
@@ -420,7 +462,6 @@
         })
 
         var xhr = new XMLHttpRequest();
-        // xhr.open("POST", "http://127.0.0.1:5001/attendance-3cf4f/asia-northeast1/setTimerecord");
         xhr.open("POST", "https://settimerecord-jbvalezpva-an.a.run.app");
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.send(json);
@@ -430,36 +471,51 @@
           if (xhr.readyState == 4 && xhr.status == 200) {
             data = xhr.response;
             console.log(data);
-            alert(JSON.stringify(data));
             if ("errors" in data) {
               console.log(data);
               alert("freee勤怠の打刻登録に失敗しました。");
-              return;
+            } else {
+              // FireBase登録
+              db.collection("attendance").doc(date).collection("users").doc(userCd.value).set({
+                user_name: userName.value,
+                start_time: time,
+                end_time: "",
+                work_space: address,
+                work_space_schedule: "",
+              })
+              .then(() => {
+                // メッセージモーダル
+                document.getElementById("modalMessage").innerHTML = "勤務開始登録しました。";
+                messageModal.style.display = "block";
+              })
+              .catch((error) => {
+                console.log(error);
+                alert("Firestoreの登録に失敗しました。");
+              });
             }
           } else {
             console.log(`Error: ${xhr.status}`);
             alert("freee勤怠の打刻登録に失敗しました。");
-            return;
           }
         };
 
         // FireBase登録
-        db.collection("attendance").doc(date).collection("users").doc(userCd.value).set({
-          user_name: userName.value,
-          start_time: time,
-          end_time: "",
-          work_space: address,
-          work_space_schedule: "",
-        })
-        .then(() => {
-          // メッセージモーダル
-          document.getElementById("modalMessage").innerHTML = "勤務開始登録しました。";
-          messageModal.style.display = "block";
-        })
-        .catch((error) => {
-          console.log(error);
-          alert("Firestoreの登録に失敗しました。");
-        });
+        // db.collection("attendance").doc(date).collection("users").doc(userCd.value).set({
+        //   user_name: userName.value,
+        //   start_time: time,
+        //   end_time: "",
+        //   work_space: address,
+        //   work_space_schedule: "",
+        // })
+        // .then(() => {
+        //   // メッセージモーダル
+        //   document.getElementById("modalMessage").innerHTML = "勤務開始登録しました。";
+        //   messageModal.style.display = "block";
+        // })
+        // .catch((error) => {
+        //   console.log(error);
+        //   alert("Firestoreの登録に失敗しました。");
+        // });
       });
 
       // 勤務終了ボタン押下
@@ -511,7 +567,6 @@
         console.log(json);
 
         var xhr = new XMLHttpRequest();
-        // xhr.open("POST", "http://127.0.0.1:5001/attendance-3cf4f/asia-northeast1/setTimerecord");
         xhr.open("POST", "https://settimerecord-jbvalezpva-an.a.run.app");
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.send(json);
@@ -520,47 +575,45 @@
           if (xhr.readyState == 4 && xhr.status == 200) {
             var data = xhr.response;
             console.log(data);
-            alert(JSON.stringify(data));
             if ("errors" in data) {
-              console.log(data);
               alert("freee勤怠の打刻登録に失敗しました。");
+            } else {
+              // 勤務開始情報を取得
+              var docRef = db.collection("attendance").doc(date).collection("users").doc(userCd.value);
+              docRef.get().then((doc) => {
+                if (doc.exists) {
+                  attendance = doc.data();
+                  console.log("Document data:", attendance.user_name);
+                  // FireBase登録
+                  db.collection("attendance").doc(date).collection("users").doc(userCd.value).set({
+                    user_name: attendance.user_name,
+                    start_time: attendance.start_time,
+                    end_time: time,
+                    work_space: attendance.work_space,
+                  })
+                  .then(() => {
+                    // メッセージモーダル
+                    document.getElementById("modalMessage").innerHTML = "勤務終了登録しました。";
+                    messageModal.style.display = "block";
+                  })
+                  .catch((error) => {
+                    console.log(error);
+                    alert("Firestoreの登録に失敗しました。");
+                  });
+                } else {
+                  console.log("No such document!");
+                  alert("Firestoreの登録に失敗しました。");
+                }
+              }).catch((error) => {
+                  console.log("Error getting document:", error);
+                  alert("Firestoreの登録に失敗しました。");
+              });
             }
           } else {
             console.log(`Error: ${xhr.status}`);
             alert("freee勤怠の打刻登録に失敗しました。");
           }
         };
-
-        // 勤務開始情報を取得
-        var docRef = db.collection("attendance").doc(date).collection("users").doc(userCd.value);
-        docRef.get().then((doc) => {
-          if (doc.exists) {
-            attendance = doc.data();
-            console.log("Document data:", attendance.user_name);
-            // FireBase登録
-            db.collection("attendance").doc(date).collection("users").doc(userCd.value).set({
-              user_name: attendance.user_name,
-              start_time: attendance.start_time,
-              end_time: time,
-              work_space: attendance.work_space,
-            })
-            .then(() => {
-              // メッセージモーダル
-              document.getElementById("modalMessage").innerHTML = "勤務終了登録しました。";
-              messageModal.style.display = "block";
-            })
-            .catch((error) => {
-              console.log(error);
-              alert("Firestoreの登録に失敗しました。");
-            });
-          } else {
-            console.log("No such document!");
-            alert("Firestoreの登録に失敗しました。");
-          }
-        }).catch((error) => {
-            console.log("Error getting document:", error);
-            alert("Firestoreの登録に失敗しました。");
-        });
       });
 
       // メッセージモーダルを閉じる
