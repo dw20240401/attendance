@@ -490,7 +490,7 @@
               })
               .catch((error) => {
                 console.log(error);
-                alert("Firestoreの登録に失敗しました。");
+                alert("Firestoreの登録に失敗しました。" + error);
               });
             }
           } else {
@@ -584,7 +584,7 @@
                 if (doc.exists) {
                   attendance = doc.data();
                   console.log("Document data:", attendance.user_name);
-                  // FireBase登録
+                  // Firestore登録
                   db.collection("attendance").doc(date).collection("users").doc(userCd.value).set({
                     user_name: attendance.user_name,
                     start_time: attendance.start_time,
@@ -602,7 +602,22 @@
                   });
                 } else {
                   console.log("No such document!");
-                  alert("Firestoreの登録に失敗しました。");
+                  // 退勤情報のみFirestore登録
+                  db.collection("attendance").doc(date).collection("users").doc(userCd.value).set({
+                    user_name: userName.value,
+                    start_time: "",
+                    end_time: time,
+                    work_space: address,
+                  })
+                  .then(() => {
+                    // メッセージモーダル
+                    document.getElementById("modalMessage").innerHTML = "勤務終了登録しました。";
+                    messageModal.style.display = "block";
+                  })
+                  .catch((error) => {
+                    console.log(error);
+                    alert("Firestoreの登録に失敗しました。");
+                  });
                 }
               }).catch((error) => {
                   console.log("Error getting document:", error);
