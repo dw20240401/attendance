@@ -102,6 +102,7 @@
             var membersDocRef = db.collection("users2").doc(divisionDoc.id).collection("members");
             membersDocRef.orderBy("order").get().then((membersDocs) => {
               membersDocs.forEach(membersDoc => {
+                var uid = membersDoc.id
                 var user = membersDoc.data();
                 var tbl = document.getElementById("tbl");
                 var tr = document.createElement("tr");
@@ -112,7 +113,7 @@
                 var td5 = document.createElement('td');
                 var td6 = document.createElement('td');
                 // 各ユーザの勤怠情報取得
-                var attendanceDocRef = db.collection("attendance").doc(date).collection("users").doc(user.user_cd);
+                var attendanceDocRef = db.collection("attendance").doc(date).collection("users").doc(uid);
                 // var attendanceDocRef = db.collection("attendance").doc("20240425").collection("users").doc(user.user_cd);
                 attendanceDocRef.get().then((doc2) => {
                   if(doc2.exists) {
