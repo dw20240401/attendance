@@ -32,16 +32,28 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore-compat.js"></script>
     <script>
-      // FireStore設定
+      // Firebase 開発環境
+      // const firebaseConfig = {
+      //   apiKey: "AIzaSyCL5ftfrlwsjTa4O-DjPqLtJA-t0JHDLoU",
+      //   authDomain: "attendance-3cf4f.firebaseapp.com",
+      //   projectId: "attendance-3cf4f",
+      //   storageBucket: "attendance-3cf4f.appspot.com",
+      //   messagingSenderId: "442106731625",
+      //   appId: "1:442106731625:web:a3c7b0f4521bfd88c096f8",
+      //   measurementId: "G-1PN91D78KW"     
+      // };
+
+      // Firebase 本番環境
       const firebaseConfig = {
-        apiKey: "AIzaSyCL5ftfrlwsjTa4O-DjPqLtJA-t0JHDLoU",
-        authDomain: "attendance-3cf4f.firebaseapp.com",
-        projectId: "attendance-3cf4f",
-        storageBucket: "attendance-3cf4f.appspot.com",
-        messagingSenderId: "442106731625",
-        appId: "1:442106731625:web:a3c7b0f4521bfd88c096f8",
-        measurementId: "G-1PN91D78KW"     
+        apiKey: "AIzaSyCsq6W-1iYaTXE-l20FRqGyOJaG_QWI0NQ",
+        authDomain: "timerecord-ba98d.firebaseapp.com",
+        projectId: "timerecord-ba98d",
+        storageBucket: "timerecord-ba98d.appspot.com",
+        messagingSenderId: "473420527066",
+        appId: "1:473420527066:web:2dbbf9deea5c0c540b7ce3",
+        measurementId: "G-K7WLNRDMZ8"
       };
+
       const app = firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
 
