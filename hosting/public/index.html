@@ -19,9 +19,11 @@
                 <!-- <th></th> -->
                 <th>部門名</th>
                 <th>社員名</th>
+                <th>本日予定</th>
                 <th>勤務場所</th>
                 <th>勤務開始</th>
                 <th>勤務終了</th>
+                <th>明日/来週</th>
               </tr>
             </thead>
           </table>
@@ -32,45 +34,18 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore-compat.js"></script>
     <script>
-      // Firebase 開発環境
-      // const firebaseConfig = {
-      //   apiKey: "AIzaSyCL5ftfrlwsjTa4O-DjPqLtJA-t0JHDLoU",
-      //   authDomain: "attendance-3cf4f.firebaseapp.com",
-      //   projectId: "attendance-3cf4f",
-      //   storageBucket: "attendance-3cf4f.appspot.com",
-      //   messagingSenderId: "442106731625",
-      //   appId: "1:442106731625:web:a3c7b0f4521bfd88c096f8",
-      //   measurementId: "G-1PN91D78KW"     
-      // };
-
-      // Firebase 本番環境
+      // FireStore設定
       const firebaseConfig = {
-        apiKey: "AIzaSyCsq6W-1iYaTXE-l20FRqGyOJaG_QWI0NQ",
-        authDomain: "timerecord-ba98d.firebaseapp.com",
-        projectId: "timerecord-ba98d",
-        storageBucket: "timerecord-ba98d.appspot.com",
-        messagingSenderId: "473420527066",
-        appId: "1:473420527066:web:2dbbf9deea5c0c540b7ce3",
-        measurementId: "G-K7WLNRDMZ8"
+        apiKey: "AIzaSyCL5ftfrlwsjTa4O-DjPqLtJA-t0JHDLoU",
+        authDomain: "attendance-3cf4f.firebaseapp.com",
+        projectId: "attendance-3cf4f",
+        storageBucket: "attendance-3cf4f.appspot.com",
+        messagingSenderId: "442106731625",
+        appId: "1:442106731625:web:a3c7b0f4521bfd88c096f8",
+        measurementId: "G-1PN91D78KW"     
       };
-
       const app = firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
-
-      // KING OF TIME WebAPI
-      // const xhr = new XMLHttpRequest();
-      // xhr.withCredentials = true;
-      // xhr.open("GET", "https://api.kingtime.jp/v1.0/daily-workings/timerecord?start=2024-04-23&end=2024-04-23&additionalFields=currentDateEmployee");
-      // xhr.setRequestHeader("Access-Control-Allow-Origin", "*");
-      // xhr.setRequestHeader("Authorization", "Bearer 07d05c20a9fb41a5b1be08888d2f2654");
-      // xhr.setRequestHeader("Content-Type", "application/json");
-      // xhr.send();
-
-      // xhr.onreadystatechange = function() {
-      //   if(xhr.readyState === 4 && xhr.status === 200) {
-      //     console.log(xhr.responseText);
-      //   }
-      // }
 
       // 現在日時セット
       function setNowDataTime() {
@@ -124,54 +99,139 @@
                 var td4 = document.createElement('td');
                 var td5 = document.createElement('td');
                 var td6 = document.createElement('td');
-                // 各ユーザの勤怠情報取得
-                var attendanceDocRef = db.collection("attendance").doc(date).collection("users").doc(uid);
-                // var attendanceDocRef = db.collection("attendance").doc("20240425").collection("users").doc(user.user_cd);
-                attendanceDocRef.get().then((doc2) => {
-                  if(doc2.exists) {
-                    var attendance = doc2.data();
-                    // 勤務中か
-                    if(attendance.start_time && !attendance.end_time) {
-                      td2.style.color = "#ffffff";
-                      td2.style.fontWeight = "bold";
-                      td2.style.backgroundColor = "#009900";
-                      td5.textContent = "--:--:--";
+                var td7 = document.createElement('td');
+                // 各ユーザの勤怠情報取得（新）
+                var attendanceDocRef = db.collection("attendance2").doc(uid);
+                attendanceDocRef.get().then((attendanceDoc) => {
+                  if (attendanceDoc.exists) {
+                    // 今日、明日の終日予定
+                    td3.textContent = attendanceDoc.data().today;
+                    td7.textContent = attendanceDoc.data().tomorrow;
+                  } else {
+                    td3.textContent = "";
+                    td7.textContent = "";
+                  }
+                  var timerecordDocRef = db.collection("attendance2").doc(uid).collection("timerecord").doc(date);
+                  timerecordDocRef.get().then((timerecordDoc) => {
+                    td5.textContent = "--:--:--";
+                    td6.textContent = "--:--:--";
+                    if(timerecordDoc.exists) {
+                      var attendance = timerecordDoc.data();
+                      // 勤務中か
+                      if(attendance.start_time && !attendance.end_time) {
+                        td2.style.color = "#ffffff";
+                        td2.style.fontWeight = "bold";
+                        td2.style.backgroundColor = "#009900";
+                        td5.textContent = attendance.start_time;
+                        // td6.textContent = "--:--:--";
+                      } else if(attendance.end_time) {
+                        td2.style.color = "#ffffff";
+                        td2.style.fontWeight = "bold";
+                        td2.style.backgroundColor = "#FF6600"
+                        td5.textContent = attendance.start_time;
+                        td6.textContent = attendance.end_time;
+                      } else {
+                        td2.style.color = "#ffffff";
+                        td2.style.fontWeight = "bold";
+                        td2.style.backgroundColor = "#FF6600"
+                      }
+                      td1.textContent = user.division_name;
+                      td2.textContent = user.user_name;
+                      td4.textContent = attendance.work_space;
+                      tr.appendChild(td1);
+                      tr.appendChild(td2);
+                      tr.appendChild(td3);
+                      tr.appendChild(td4);
+                      tr.appendChild(td5);
+                      tr.appendChild(td6);
+                      tr.appendChild(td7);
+                      tbl.appendChild(tr);
                     } else {
+                      td1.textContent = user.division_name;
+                      td2.textContent = user.user_name;
                       td2.style.color = "#ffffff";
                       td2.style.fontWeight = "bold";
                       td2.style.backgroundColor = "#FF6600"
-                      td5.textContent = attendance.end_time;
+                      td4.textContent = "";
+                      tr.appendChild(td1);
+                      tr.appendChild(td2);
+                      tr.appendChild(td3);
+                      tr.appendChild(td4);
+                      tr.appendChild(td5);
+                      tr.appendChild(td6);
+                      tr.appendChild(td7);
+                      tbl.appendChild(tr);
                     }
-                    td1.textContent = user.division_name;
-                    td2.textContent = user.user_name;
-                    td3.textContent = attendance.work_space;
-                    td4.textContent = attendance.start_time;
-                    tr.appendChild(td1);
-                    tr.appendChild(td2);
-                    tr.appendChild(td3);
-                    tr.appendChild(td4);
-                    tr.appendChild(td5);
-                    tbl.appendChild(tr);
-                  } else {
-                    td1.textContent = user.division_name;
-                    td2.textContent = user.user_name;
-                    td2.style.color = "#ffffff";
-                    td2.style.fontWeight = "bold";
-                    td2.style.backgroundColor = "#FF6600"
-                    td3.textContent = "";
-                    td4.textContent = "--:--:--";
-                    td5.textContent = "--:--:--";
-                    tr.appendChild(td1);
-                    tr.appendChild(td2);
-                    tr.appendChild(td3);
-                    tr.appendChild(td4);
-                    tr.appendChild(td5);
-                    tbl.appendChild(tr);
-                  }
+                  }).catch((error) => {
+                    console.log("勤怠情報取得失敗", error);
+                    alert("ユーザマスタ取得に失敗しました。");
+                  });
                 }).catch((error) => {
                   console.log("勤怠情報取得失敗", error);
                   alert("ユーザマスタ取得に失敗しました。");
                 });
+
+                // 各ユーザの勤怠情報取得
+                // var attendanceDocRef = db.collection("attendance").doc(date).collection("users").doc(uid);
+                // attendanceDocRef.get().then((doc2) => {
+                //   td5.textContent = "--:--:--";
+                //   td6.textContent = "--:--:--";
+                //   if(doc2.exists) {
+                //     var attendance = doc2.data();
+                //     // 勤務中か
+                //     if(attendance.start_time && !attendance.end_time) {
+                //       td2.style.color = "#ffffff";
+                //       td2.style.fontWeight = "bold";
+                //       td2.style.backgroundColor = "#009900";
+                //       td5.textContent = attendance.start_time;
+                //       // td6.textContent = "--:--:--";
+                //     } else if(attendance.end_time) {
+                //       td2.style.color = "#ffffff";
+                //       td2.style.fontWeight = "bold";
+                //       td2.style.backgroundColor = "#FF6600"
+                //       td5.textContent = attendance.start_time;
+                //       td6.textContent = attendance.end_time;
+                //     } else {
+                //       td2.style.color = "#ffffff";
+                //       td2.style.fontWeight = "bold";
+                //       td2.style.backgroundColor = "#FF6600"
+                //     }
+                //     td1.textContent = user.division_name;
+                //     td2.textContent = user.user_name;
+                //     td3.textContent = attendance.today;
+                //     td4.textContent = attendance.work_space;
+                //     // td5.textContent = attendance.start_time;
+                //     td7.textContent = attendance.tomorrow;
+                //     tr.appendChild(td1);
+                //     tr.appendChild(td2);
+                //     tr.appendChild(td3);
+                //     tr.appendChild(td4);
+                //     tr.appendChild(td5);
+                //     tr.appendChild(td6);
+                //     tr.appendChild(td7);
+                //     tbl.appendChild(tr);
+                //   } else {
+                //     td1.textContent = user.division_name;
+                //     td2.textContent = user.user_name;
+                //     td2.style.color = "#ffffff";
+                //     td2.style.fontWeight = "bold";
+                //     td2.style.backgroundColor = "#FF6600"
+                //     td4.textContent = "";
+                //     // td5.textContent = "--:--:--";
+                //     // td6.textContent = "--:--:--";
+                //     tr.appendChild(td1);
+                //     tr.appendChild(td2);
+                //     tr.appendChild(td3);
+                //     tr.appendChild(td4);
+                //     tr.appendChild(td5);
+                //     tr.appendChild(td6);
+                //     tr.appendChild(td7);
+                //     tbl.appendChild(tr);
+                //   }
+                // }).catch((error) => {
+                //   console.log("勤怠情報取得失敗", error);
+                //   alert("ユーザマスタ取得に失敗しました。");
+                // });
               });
             }).catch((error) => {
               console.log("Firestore ユーザマスタ取得失敗", error);
