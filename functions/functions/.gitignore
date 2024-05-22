@@ -1,1 +1,4 @@
 *.local
+
+# Python cache
+__pycache__/
