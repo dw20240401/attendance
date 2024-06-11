@@ -10,7 +10,8 @@
     <div id="wrapper">
       <main>
         <div>
-          <p id="NowDateArea">    /  /  ()</p>
+          <h3 id="NowDateArea">    /  /  ()</h3>　
+          <button type="button" id="reloadBtn">🔃</button>
         </div>
         <div id="wrapper">
           <table id="tbl" border="1">
@@ -257,6 +258,11 @@
       }
       getAttendance();
       // setInterval('getAttendance()',1000);
+
+      // 再読込ボタン押下
+      document.querySelector('#reloadBtn').addEventListener('click', function() {
+        window.location.reload();
+      });
 
     </script>
   </body>

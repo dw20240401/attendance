@@ -12,6 +12,15 @@ body {
   text-align: center;
 }
 
+#NowDateArea {
+  display: inline;
+}
+
+#reloadBtn {
+  background: transparent;
+  /* border-color: transparent */
+}
+
 table {
   width:700px;
   border-collapse: collapse;
