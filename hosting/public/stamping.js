@@ -657,7 +657,7 @@ xhr.onload = () => {
                 work_space: address
             }).then(() => {
                 // メッセージモーダル
-                document.getElementById("modalMessage").innerHTML = "勤務開始登録しました。";
+                document.getElementById("modalMessage").innerHTML = "勤務終了登録しました。";
                 messageModal.style.display = "block";
                 document.getElementById("startWorkBtn").disabled = false;
                 document.getElementById("endWorkBtn").disabled = false;
