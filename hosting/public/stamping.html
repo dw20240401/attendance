@@ -32,8 +32,15 @@
       <div class="button-area">
         <button class="start_work_btn" type="button" id="startWorkBtn">勤務開始</button>
         <button class="end_work_btn" type="button" id="endWorkBtn">勤務終了</button>
-      </div>      
-      <div class="wp-block-spacer" style="height: 100px;" aria-hidden="true"></div>
+      </div>
+      <!-- <div> -->
+      <div class="radio-area">
+        <input type="radio" name="division" id="radio1" value="1" onchange="radioButton1()" checked>通常登録
+        <br>
+        <input type="radio" name="division" id="radio2" value="2" onchange="radioButton2()">直行・直帰　
+        <input type="time" id="stampingTime" font-size="30px">
+      </div>
+      <div class="wp-block-spacer" style="height: 150px;" aria-hidden="true"></div>
       <div>
         <button class="user_select_btn" type="button" id="logoutBtn">ログアウト</button>
       </div>
